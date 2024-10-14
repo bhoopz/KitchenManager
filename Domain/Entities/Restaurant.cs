@@ -8,7 +8,7 @@ namespace Domain.Entities
 {
     public class Restaurant : AuditableEntity
     {
-        public Guid RestaurantId { get; set; }
+        public Guid RestaurantId { get; set; } = Guid.NewGuid();
         public string Name { get; set; }
         public string Address { get; set; }
         public string PhoneNumber { get; set; }

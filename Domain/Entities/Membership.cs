@@ -11,7 +11,7 @@ namespace Domain.Entities
     {
         public Guid MembershipId { get; set; }
         public Guid UserId { get; set; }
-        public virtual User User { get; set; }
+        public virtual ApplicationUser User { get; set; }
         public Guid RestaurantId { get; set; }
         public virtual Restaurant Restaurant { get; set; }
         public UserRole Role { get; set; }

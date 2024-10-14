@@ -1,6 +1,10 @@
-﻿using Domain.Entities;
+﻿using Application.DTOs;
+using Application.Interfaces;
+using Domain.Entities;
 using Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace WebAPI.Controllers
 {
@@ -8,38 +12,42 @@ namespace WebAPI.Controllers
     [Route("api/[controller]")]
     public class RestaurantController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        public RestaurantController(ApplicationDbContext context)
+        private readonly IRestaurantService _restaurantService;
+        private readonly IInvitationService _invitationService;
+        public RestaurantController(IRestaurantService restaurantService, IInvitationService invitationService)
         {
-            _context = context;
+            _restaurantService = restaurantService;
+            _invitationService = invitationService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateRestaurant([FromBody] Restaurant restaurant)
+        [HttpPost, Route("create")]
+        [Authorize]
+        public async Task<IActionResult> CreateRestaurant(CreateRestaurantDto restaurantData)
         {
-            if (restaurant == null)
+            var result = await _restaurantService.CreateRestaurant(restaurantData);
+            if (result.Succeeded)
             {
-                return BadRequest();
+                return Ok(result);
             }
-            Console.WriteLine("AAAAAAAAA");
-
-            _context.Restaurants.Add(restaurant);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetRestaurantById), new { id = restaurant.RestaurantId }, restaurant);
+            else
+            {
+                return BadRequest(result);
+            }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetRestaurantById(int id)
+        [HttpPost("{restaurantId}/invite")]
+        [Authorize]
+        public async Task<IActionResult> InviteUser(InviteUserDto inviteUserDto, Guid restaurantId)
         {
-            var restaurant = await _context.Restaurants.FindAsync(id);
-
-            if (restaurant == null)
+            var result = await _invitationService.InviteUserToRestaurant(inviteUserDto.Email, restaurantId);
+            if (result.Succeeded)
             {
-                return NotFound();
+                return Ok(result);
             }
-
-            return Ok(restaurant);
+            else
+            {
+                return BadRequest(result);
+            }
         }
     }
 }
